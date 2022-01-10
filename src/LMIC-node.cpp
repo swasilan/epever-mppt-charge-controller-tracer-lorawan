@@ -50,7 +50,9 @@
  *
  ******************************************************************************/
 
+#include "Arduino.h"
 #include "LMIC-node.h"
+#include "Charge-controller.h"
 
 
 //  █ █ █▀▀ █▀▀ █▀▄   █▀▀ █▀█ █▀▄ █▀▀   █▀▄ █▀▀ █▀▀ ▀█▀ █▀█
@@ -59,6 +61,11 @@
 
 
 const uint8_t payloadBufferLength = 4;    // Adjust to fit max payload length
+
+#define MAX485_DE_RE_PIN 23
+#define RS_485_BAUD_RATE 115200
+ModbusMaster node;
+ChargeController *chargeControllerPtr;
 
 
 //  █ █ █▀▀ █▀▀ █▀▄   █▀▀ █▀█ █▀▄ █▀▀   █▀▀ █▀█ █▀▄
@@ -846,6 +853,12 @@ void setup()
 //  ▀▀▀ ▀▀▀ ▀▀▀ ▀ ▀   ▀▀▀ ▀▀▀ ▀▀  ▀▀▀   ▀▀  ▀▀▀ ▀▀▀ ▀▀▀ ▀ ▀
 
     // Place code for initializing sensors etc. here.
+
+    // Modbus
+    Serial.begin(RS_485_BAUD_RATE);
+    node.begin(1, Serial);
+    chargeControllerPtr = new ChargeController(node, MAX485_DE_RE_PIN);
+
 
     resetCounter();
 
