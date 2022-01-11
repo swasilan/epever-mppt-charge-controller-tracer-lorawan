@@ -62,8 +62,11 @@
 
 const uint8_t payloadBufferLength = 4;    // Adjust to fit max payload length
 
-#define MAX485_DE_RE_PIN 23
-#define RS_485_BAUD_RATE 115200
+#define MAX485_DE_RE_PIN 25
+#define MAX485_TX_PIN 23
+#define MAX485_RX_PIN 22
+#define MAX485_BAUD_RATE 115200
+
 ModbusMaster node;
 ChargeController *chargeControllerPtr;
 
@@ -854,9 +857,9 @@ void setup()
 
     // Place code for initializing sensors etc. here.
 
-    // Modbus
-    Serial.begin(RS_485_BAUD_RATE);
-    node.begin(1, Serial);
+    // RS485 - Modbus RTU
+    Serial1.begin(MAX485_BAUD_RATE, MAX485_RX_PIN, MAX485_TX_PIN);
+    node.begin(1, Serial1);
     chargeControllerPtr = new ChargeController(node, MAX485_DE_RE_PIN);
 
 
