@@ -70,6 +70,17 @@ const uint8_t payloadBufferLength = 4;    // Adjust to fit max payload length
 ModbusMaster node;
 ChargeController *chargeControllerPtr;
 
+struct LoRaPackage {
+    uint16_t pvVoltage;
+    uint16_t pvCurrent;
+    uint16_t battVoltage;
+    uint16_t battChargingCurrent;
+    uint16_t battRemainingPercentage;
+    uint16_t loadVoltage;
+    uint16_t loadCurrent;
+};
+
+
 
 //  █ █ █▀▀ █▀▀ █▀▄   █▀▀ █▀█ █▀▄ █▀▀   █▀▀ █▀█ █▀▄
 //  █ █ ▀▀█ █▀▀ █▀▄   █   █ █ █ █ █▀▀   █▀▀ █ █ █ █
@@ -716,6 +727,21 @@ void resetCounter()
     counter_ = 0;
 }
 
+LoRaPackage getLoraPackage() {
+    LoRaPackage loRaPackage; // 26 bytes
+
+    /* Swap bytes from little endian to big endian for easier payload formatting in TTN */
+    loRaPackage.pvVoltage = __builtin_bswap16(3630); //  36.3 V
+    loRaPackage.pvCurrent = __builtin_bswap16(850);  //   8.5 A
+    loRaPackage.battVoltage = __builtin_bswap16(1240);          //  12.4 V
+    loRaPackage.battChargingCurrent = __builtin_bswap16(2488);  //  24.88 A
+    loRaPackage.battRemainingPercentage = __builtin_bswap16(8543); // 85.43 %
+    loRaPackage.loadVoltage = __builtin_bswap16(1200);  //  12.0 V
+    loRaPackage.loadCurrent = __builtin_bswap16(134);   //   1.34 A
+
+    return loRaPackage;
+}
+
 
 void processWork(ostime_t doWorkJobTimeStamp)
 {
@@ -773,14 +799,12 @@ void processWork(ostime_t doWorkJobTimeStamp)
             #endif
         }
         else
-        {
+        {           
             // Prepare uplink payload.
             uint8_t fPort = 10;
-            payloadBuffer[0] = counterValue >> 8;
-            payloadBuffer[1] = counterValue & 0xFF;
-            uint8_t payloadLength = 2;
+            LoRaPackage payloadBuffer = getLoraPackage();
 
-            scheduleUplink(fPort, payloadBuffer, payloadLength);
+            scheduleUplink(fPort, (byte*)&payloadBuffer, sizeof(LoRaPackage));
         }
     }
 }    
