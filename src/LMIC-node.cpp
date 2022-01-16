@@ -728,16 +728,20 @@ void resetCounter()
 }
 
 LoRaPackage getLoraPackage() {
+    PvData pvData = chargeControllerPtr->readPvData();
+    BattData battData = chargeControllerPtr->readBattData();
+    LoadData loadData = chargeControllerPtr->readLoadData();
+
     LoRaPackage loRaPackage; // 26 bytes
 
     /* Swap bytes from little endian to big endian for easier payload formatting in TTN */
-    loRaPackage.pvVoltage = __builtin_bswap16(3630); //  36.3 V
-    loRaPackage.pvCurrent = __builtin_bswap16(850);  //   8.5 A
-    loRaPackage.battVoltage = __builtin_bswap16(1240);          //  12.4 V
-    loRaPackage.battChargingCurrent = __builtin_bswap16(2488);  //  24.88 A
-    loRaPackage.battRemainingPercentage = __builtin_bswap16(8543); // 85.43 %
-    loRaPackage.loadVoltage = __builtin_bswap16(1200);  //  12.0 V
-    loRaPackage.loadCurrent = __builtin_bswap16(134);   //   1.34 A
+    loRaPackage.pvVoltage = __builtin_bswap16(pvData.voltage); 
+    loRaPackage.pvCurrent = __builtin_bswap16(pvData.current); 
+    loRaPackage.battVoltage = __builtin_bswap16(battData.voltage); 
+    loRaPackage.battChargingCurrent = __builtin_bswap16(battData.chargingCurrent); 
+    loRaPackage.battRemainingPercentage = __builtin_bswap16(battData.remainingPercentage);
+    loRaPackage.loadVoltage = __builtin_bswap16(loadData.voltage); 
+    loRaPackage.loadCurrent = __builtin_bswap16(loadData.current); 
 
     return loRaPackage;
 }
